@@ -199,6 +199,14 @@
   width: 300px;
   
 }
+.video-player video{
+  border-radius: 50%;
+}
+.video-player {
+  height: 100%;
+  width: 100%;
+  
+}
 
 
 @media (max-width: 1400px) {
