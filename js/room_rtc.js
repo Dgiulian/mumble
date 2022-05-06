@@ -27,6 +27,10 @@ let remoteUsers = {};
 async function joinRoomInit() {
   client = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' });
   await client.join(APP_ID, roomId, token, uid);
+  client.on('user-published', handleUserPublished);
+  client.on('user-left', handleUserLeft);
+
+  await joinStream();
 }
 async function joinStream() {
   localTracks = await AgoraRTC.createMicrophoneAndCameraTracks();
@@ -35,7 +39,30 @@ async function joinStream() {
                </>`;
   document.getElementById('streams__container').insertAdjacentHTML('beforeend', player);
   localTracks[1].play(`user-${uid}`)  // play the video stream in the video player
-  const stream = await client.createStream({})
+  await client.publish([localTracks[0],localTracks[1]]);
 }
-joinRoomInit()
-joinStream()
+async function handleUserPublished(user, mediaType) {
+  remoteUsers[user.uid] = user;
+  await client.subscribe(user, mediaType);
+  const currentPlayer = document.getElementById(`user-${user.uid}`);
+  if (!currentPlayer) {
+    const player = `<div class="video__container" id="user-container-${user.uid}">
+    <div class="video-player" id="user-${user.uid}"></div>
+    </>`;
+    document.getElementById('streams__container').insertAdjacentHTML('beforeend', player);
+  }
+  if(mediaType === 'video') {
+    user.videoTrack.play(`user-${user.uid}`)  // play the video stream in the video player    
+  }
+  if(mediaType === 'audio'){
+    user.audioTrack.play()
+  }
+}
+
+async function handleUserLeft(user){
+  delete remoteUsers[user.uid];
+  document.getElementById(`user-container-${user.uid}`).remove();
+}
+
+joinRoomInit();
+
