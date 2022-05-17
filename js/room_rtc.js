@@ -65,8 +65,9 @@ async function handleUserPublished(user, mediaType) {
   }
 
   if (displayFrame.style.display) {
-    player.style.height = '100px'
-    player.style.width = '100px'
+    let videoFrame = document.getElementById(`user-container-${user.uid}`);
+    videoFrame.style.height = '100px'
+    videoFrame.style.width = '100px'
 
   }
 
@@ -94,5 +95,18 @@ async function handleUserLeft(user) {
   }
 }
 
+let toggleCamera = async (e) => {
+  let button = e.currentTarget;
+  button.classList.toggle('active');
+  await localTracks[1].setMuted(!localTracks[1].muted)
+}
+let toggleMic = async (e) => {
+  let button = e.currentTarget;
+  console.log(localTracks[0].muted)
+  button.classList.toggle('active');
+  await localTracks[0].setMuted(!localTracks[0].muted)
+}
+document.getElementById('camera-btn').addEventListener('click', toggleCamera)
+document.getElementById('mic-btn').addEventListener('click', toggleMic)
 joinRoomInit();
 
